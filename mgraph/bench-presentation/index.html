@@ -1,0 +1,1196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>mgraph + msearch — Benchmarks Plan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LBZW8J3BWE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LBZW8J3BWE');
+</script>
+
+<link rel="stylesheet" href="./colors_and_type.css" />
+<style>
+  /* ——— Deck-level tokens ———————————————————————————————————————————————
+     Committed scale for 1920×1080. Every slide uses these, no ad-hoc px. */
+  :root {
+    --slide-pad-x: 128px;
+    --slide-pad-t: 120px;
+    --slide-pad-b: 104px;
+
+    --ts-eyebrow: 24px;
+    --ts-meta:    24px;
+    --ts-small:   26px;
+    --ts-body:    30px;
+    --ts-body-lg: 36px;
+    --ts-subtitle: 44px;
+    --ts-title:   72px;
+    --ts-display: 112px;
+    --ts-mega:    180px;
+
+    --gap-title: 40px;
+    --gap-item:  28px;
+    --gap-block: 56px;
+  }
+
+  html, body { background: #FFF; }
+  body { font-feature-settings: "ss01", "kern", "tnum"; }
+
+  deck-stage section {
+    background: #FFF;
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: var(--ts-body);
+    line-height: 1.45;
+    display: flex;
+    flex-direction: column;
+    padding: var(--slide-pad-t) var(--slide-pad-x) var(--slide-pad-b);
+    position: relative;
+  }
+
+  /* Dark surface slides */
+  deck-stage section.ink {
+    background: var(--ink-950);
+  }
+
+  /* ——— Shared components ———————————————————————————————————————————— */
+
+  .eyebrow-lg {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    font-weight: 500;
+  }
+
+  .title-xl {
+    font-family: var(--font-display);
+    font-size: var(--ts-title);
+    font-weight: 500;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: var(--fg-strong);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .title-display {
+    font-family: var(--font-display);
+    font-size: var(--ts-display);
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    color: var(--fg-strong);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    font-family: var(--font-display);
+    font-size: var(--ts-subtitle);
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--fg-muted);
+    margin: 0;
+    text-wrap: balance;
+    max-width: 32ch;
+  }
+
+  .lede-deck {
+    font-family: var(--font-body);
+    font-size: var(--ts-body-lg);
+    line-height: 1.45;
+    color: var(--fg);
+    margin: 0;
+    max-width: 38ch;
+    text-wrap: pretty;
+  }
+
+  .meta {
+    font-family: var(--font-mono);
+    font-size: var(--ts-meta);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+
+  /* Slide chrome: corner mark + footer */
+  .corner-mark {
+    position: absolute;
+    top: 48px;
+    left: var(--slide-pad-x);
+    color: var(--fg-muted);
+    opacity: 0.5;
+  }
+  .slide-footer {
+    position: absolute;
+    bottom: 48px;
+    left: var(--slide-pad-x);
+    right: var(--slide-pad-x);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .slide-footer .rule-line {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+    margin: 0 32px;
+  }
+  .ink .slide-footer .rule-line { background: var(--rule); }
+  .ink .slide-footer, .ink .corner-mark { color: var(--ink-400); }
+
+  /* Registration bracket used on section-heads — echoes BrandBlock */
+  .reg-bracket {
+    position: absolute;
+    top: 80px;
+    right: var(--slide-pad-x);
+    width: 56px;
+    height: 56px;
+    color: var(--fg-muted);
+    opacity: 0.5;
+  }
+
+  /* ——— Tables ——————————————————————————————————————————————————————— */
+  table.capability {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: var(--ts-body);
+  }
+  table.capability th {
+    font-family: var(--font-mono);
+    font-size: var(--ts-meta);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    font-weight: 500;
+    text-align: left;
+    padding: 20px 32px 20px 0;
+    border-bottom: 1px solid var(--rule-strong);
+    vertical-align: bottom;
+  }
+  table.capability td {
+    padding: 28px 32px 28px 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    font-size: var(--ts-body);
+    line-height: 1.4;
+    color: var(--fg);
+  }
+  table.capability td:first-child,
+  table.capability th:first-child { padding-left: 0; }
+  table.capability td:last-child,
+  table.capability th:last-child { padding-right: 0; }
+  table.capability td.label {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    letter-spacing: 0.04em;
+    color: var(--fg-strong);
+    width: 30%;
+    text-transform: none;
+    font-weight: 500;
+  }
+  table.capability td.against {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+    width: 26%;
+    white-space: nowrap;
+  }
+  table.capability td.measure {
+    color: var(--fg-muted);
+    font-size: 26px;
+    line-height: 1.45;
+  }
+
+  /* Claim box — quiet, no accent-border-card trope */
+  .claim {
+    font-family: var(--font-display);
+    font-size: var(--ts-body-lg);
+    line-height: 1.35;
+    font-weight: 400;
+    color: var(--fg);
+    letter-spacing: -0.01em;
+    margin: 0;
+    max-width: 32ch;
+    text-wrap: pretty;
+  }
+  .claim em {
+    font-style: normal;
+    color: var(--fg-strong);
+    font-weight: 500;
+  }
+
+  /* Big number for section-head slides */
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 34px;
+    letter-spacing: 0.16em;
+    color: var(--fg-muted);
+    font-weight: 500;
+  }
+
+  /* Dark surface overrides for typography components */
+  .ink .title-xl, .ink .title-display { color: var(--fg-strong); }
+  .ink .subtitle { color: var(--ink-300); }
+  .ink .lede-deck { color: var(--ink-200); }
+  .ink .eyebrow-lg, .ink .meta, .ink .section-num { color: var(--ink-400); }
+  .ink table.capability th { color: var(--ink-400); border-bottom-color: var(--rule-strong); }
+  .ink table.capability td { color: var(--paper-050); border-bottom-color: var(--rule); }
+  .ink table.capability td.label { color: #fff; }
+  .ink table.capability td.against { color: var(--accent-300); }
+  .ink table.capability td.measure { color: var(--ink-300); }
+  .ink .claim em { color: #fff; }
+
+  /* Silver display on dark slides — use the dark-theme silver tokens */
+  .ink .silver-strong {
+    background-image: linear-gradient(
+      var(--silver-angle),
+      #ffffff 0%, #c8ccd1 50%, #5e6268 100%
+    );
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+  }
+
+  /* ——— Slide: cover —————————————————————————————————————————————————— */
+  .cover {
+    justify-content: space-between;
+    padding-bottom: 80px;
+  }
+  .cover-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, var(--rule-subtle) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--rule-subtle) 1px, transparent 1px);
+    background-size: 128px 128px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 80% at 84% 18%, black 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.3) 65%, transparent 95%);
+            mask-image: radial-gradient(ellipse 70% 80% at 84% 18%, black 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.3) 65%, transparent 95%);
+    opacity: 0.8;
+  }
+  .cover-datapoint {
+    position: absolute;
+    top: 328px; right: 512px;
+    width: 128px; height: 128px;
+    background: linear-gradient(135deg, var(--accent-subtle) 0%, transparent 70%);
+    border: 1px solid var(--accent);
+    opacity: 0.75;
+  }
+  .cover-datapoint::after {
+    content: '';
+    position: absolute; top: 50%; left: 50%;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 8px var(--accent-subtle);
+  }
+  .cover-head {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .cover-logo {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: -0.01em;
+    color: var(--fg-strong);
+    font-weight: 500;
+  }
+  .cover-logo::after {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--accent);
+    margin-left: 8px;
+    vertical-align: middle;
+    transform: translateY(-4px);
+  }
+  .cover-body {
+    position: relative;
+    margin-top: 180px;
+  }
+  .cover-body .eyebrow-lg { margin-bottom: 40px; display: block; }
+  .cover-title {
+    font-family: var(--font-display);
+    font-size: 128px;
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--fg-strong);
+    margin: 0 0 48px;
+    text-wrap: balance;
+    max-width: 18ch;
+  }
+  .cover-sub {
+    font-family: var(--font-display);
+    font-size: 42px;
+    font-weight: 300;
+    line-height: 1.25;
+    color: var(--fg-muted);
+    letter-spacing: -0.015em;
+    max-width: 40ch;
+    margin: 0;
+  }
+  .cover-foot {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+
+  /* ——— Section-head slide ——————————————————————————————————————————— */
+  .section-head {
+    justify-content: center;
+    gap: 64px;
+  }
+  .section-head .num {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    letter-spacing: 0.24em;
+    color: var(--fg-muted);
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+  .section-head .title {
+    font-family: var(--font-display);
+    font-size: 120px;
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    color: var(--fg-strong);
+    margin: 0 0 56px;
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+  .section-head .sub {
+    font-family: var(--font-display);
+    font-size: 40px;
+    font-weight: 300;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    color: var(--fg-muted);
+    max-width: 42ch;
+    margin: 0;
+  }
+
+  /* ——— Claim slide ——————————————————————————————————————————————————— */
+  .slide-claim {
+    justify-content: center;
+  }
+  .slide-claim .eyebrow-lg { margin-bottom: 40px; display: block; }
+  .slide-claim .title-xl { margin-bottom: 56px; max-width: 24ch; }
+  .slide-claim .claim { max-width: 44ch; font-size: 38px; line-height: 1.4; }
+
+  /* ——— Standard content slide ————————————————————————————————————————— */
+  .slide-std .slide-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-item);
+    margin-bottom: 40px;
+  }
+  .slide-std .slide-head .eyebrow-lg { display: block; }
+  .slide-std .slide-head .title-xl { max-width: 24ch; }
+  .slide-std .slide-head .lede-deck { margin-top: 8px; }
+
+  /* ——— Three-up block for intro slides ——————————————————————————————— */
+  .three-up {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 64px;
+    margin-top: 32px;
+  }
+  .three-up .item {
+    border-top: 1px solid var(--rule-strong);
+    padding-top: 32px;
+  }
+  .three-up .idx {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    font-weight: 500;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .three-up .label {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--fg-strong);
+    line-height: 1.15;
+    margin: 0 0 16px;
+    letter-spacing: -0.015em;
+  }
+  .three-up .desc {
+    font-family: var(--font-body);
+    font-size: 24px;
+    line-height: 1.5;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+
+  /* ——— Timeline slide ———————————————————————————————————————————————— */
+  .timeline {
+    display: grid;
+    grid-template-columns: 180px 260px 1fr;
+    gap: 0;
+    margin-top: 32px;
+  }
+  .timeline .row {
+    display: contents;
+  }
+  .timeline .cell {
+    padding: 22px 32px 22px 0;
+    border-top: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  .timeline .cell.wk {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    padding-top: 28px;
+  }
+  .timeline .cell.leg {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--fg-strong);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    padding-top: 24px;
+  }
+  .timeline .cell.body {
+    font-family: var(--font-body);
+    font-size: 24px;
+    line-height: 1.4;
+    color: var(--fg-muted);
+    padding-top: 26px;
+  }
+  .timeline .row:first-child .cell { border-top: 1px solid var(--rule-strong); }
+
+  /* End slide */
+  .end {
+    justify-content: center;
+    align-items: flex-start;
+    background: var(--paper-100);
+  }
+  .end .title-display { max-width: 18ch; }
+
+  /* Quadrant diagram */
+  .quad {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px;
+    background: var(--rule-strong);
+    border: 1px solid var(--rule-strong);
+    max-width: 1400px;
+    height: 440px;
+  }
+  .quad .cell {
+    background: var(--bg);
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .quad .cell.us {
+    background: var(--ink-950);
+    color: var(--paper-050);
+  }
+  .quad .cell .q-label {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    font-weight: 500;
+  }
+  .quad .cell.us .q-label { color: var(--accent-300); }
+  .quad .cell .q-names {
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 500;
+    color: var(--fg-strong);
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+  }
+  .quad .cell.us .q-names { color: #fff; }
+  .quad .cell .q-desc {
+    font-family: var(--font-body);
+    font-size: 24px;
+    line-height: 1.4;
+    color: var(--fg-muted);
+    max-width: 30ch;
+  }
+  .quad .cell.us .q-desc { color: var(--ink-200); }
+
+  /* Axis labels for quadrant */
+  .quad-wrap { position: relative; margin-top: 48px; max-width: 1400px; padding-bottom: 44px; }
+  .quad-xlabel {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .quad-ylabel {
+    position: absolute;
+    left: -48px; top: 0; bottom: 0;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    display: flex; justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+
+  /* Bullet list with no accent-border cards */
+  .bench-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    max-width: 1500px;
+  }
+  .bench-list li {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 32px;
+    padding: 16px 0;
+    border-top: 1px solid var(--rule);
+    align-items: baseline;
+  }
+  .bench-list li:first-child { border-top: 1px solid var(--rule-strong); }
+  .bench-list .b-name {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    letter-spacing: 0.02em;
+    color: var(--fg-strong);
+    font-weight: 500;
+    
+  }
+  .bench-list .b-desc {
+    font-family: var(--font-body);
+    font-size: 24px;
+    line-height: 1.4;
+    color: var(--fg-muted);
+  }
+  .bench-list .b-desc .vs {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 24px;
+    letter-spacing: 0.04em;
+    display: inline;
+    margin-left: 6px;
+  }
+  .ink .bench-list .b-name { color: #fff; overflow: nowrap; white-space: nowrap; }
+  .ink .bench-list .b-desc { color: var(--ink-200); }
+  .ink .bench-list .b-desc .vs { color: var(--accent-300); }
+  .ink .bench-list li { border-top-color: var(--rule); }
+  .ink .bench-list li:first-child { border-top-color: var(--rule-strong); }
+
+  /* Tight two-col layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 96px;
+    align-items: start;
+  }
+</style>
+</head>
+<body>
+
+<deck-stage width="1920" height="1080">
+
+  <!-- ================================================================= -->
+  <!-- 01 — Cover ———————————————————————————————————————————————————————— -->
+  <section data-label="Cover" class="cover">
+    <div class="cover-grid"></div>
+    <div class="cover-datapoint"></div>
+
+    <div class="cover-head">
+      <div class="cover-logo">datakey</div>
+      <div class="meta">Internal · Benchmarks Plan · Apr 2026</div>
+    </div>
+
+    <div class="cover-body">
+      <span class="eyebrow-lg">mgraph · msearch</span>
+      <h1 class="cover-title silver-strong">A zero-boundary database architecture.</h1>
+      <p class="cover-sub">From wire to GPU on Apple Silicon.<br />Treating data flows as a compute primitive.</p>
+    </div>
+
+    <div class="cover-foot">
+      <span>Jordan Rancie · Principal</span>
+      <span>01</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 02 — Two Technologies —————————————————————————————————————————————— -->
+  <section data-label="Two Technologies" class="slide-std">
+    <div class="slide-head">
+      <span class="eyebrow-lg">Opening · the two technologies</span>
+      <h2 class="title-xl silver-strong">Two technologies. One architecture.</h2>
+    </div>
+
+    <div class="two-col" style="margin-top: 24px; gap: 72px;">
+      <div>
+        <div style="height: 340px; margin-bottom: 24px; background: var(--ink-950); border: 1px solid var(--rule-strong); border-radius: 4px; overflow: hidden;">
+          <img src="assets/mgraph-concept.png" alt="mgraph concept art" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+        </div>
+        <div class="meta" style="color: var(--accent); margin-bottom: 14px;">mgraph</div>
+        <p style="font-size: 28px; line-height: 1.4; color: var(--fg); max-width: 36ch; margin: 0 0 14px;">
+          A data engine for complex data structures — trees, graphs, streams, tensors, tables, vectors.
+        </p>
+        <p style="font-size: 24px; line-height: 1.45; color: var(--fg-muted); max-width: 42ch; margin: 0;">
+          Structure-aware. Zero-copy from network to compute. mgraph is data collaboration as a primitive.
+        </p>
+      </div>
+      <div>
+        <div style="height: 340px; margin-bottom: 24px; background: var(--ink-950); border: 1px solid var(--rule-strong); border-radius: 4px; overflow: hidden;">
+          <img src="assets/msearch-concept-v3.png" alt="msearch concept art" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+        </div>
+        <div class="meta" style="color: var(--accent); margin-bottom: 14px;">msearch</div>
+        <p style="font-size: 28px; line-height: 1.4; color: var(--fg); max-width: 36ch; margin: 0 0 14px;">
+          Vector and relational database built for Apple Silicon&rsquo;s unified memory.
+        </p>
+        <p style="font-size: 24px; line-height: 1.45; color: var(--fg-muted); max-width: 42ch; margin: 0;">
+          Treats the GPU as primary compute. CPU and GPU on shared memory for a previously unseen class of operations.
+        </p>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>mgraph + msearch</span>
+      <span class="rule-line"></span>
+      <span>02</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 03 — Combined Architecture (value prop) ———————————————————————————— -->
+  <section data-label="Combined Architecture" class="slide-std">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 96px; align-items: center; flex: 1;">
+      <div>
+        <span class="eyebrow-lg" style="display: block; margin-bottom: 32px;">Opening · the combined architecture</span>
+        <h2 class="title-xl silver-strong" style="margin-bottom: 40px; max-width: 18ch;">A direct line from wire to GPU.</h2>
+        <p style="font-size: 34px; line-height: 1.4; color: var(--fg); max-width: 36ch; margin: 0 0 28px;">
+          Together, they provide a direct line from wire to GPU compute that was previously impossible.
+        </p>
+        <p style="font-size: 26px; line-height: 1.5; color: var(--fg-muted); max-width: 42ch; margin: 0;">
+          Both are industry firsts. A structure-aware zero-copy data engine, and a database that treats the Apple Silicon GPU as primary compute. No existing system provides this path.
+        </p>
+      </div>
+      <div style="width: 100%; height: 620px; overflow: hidden; border-radius: 4px;">
+        <img src="assets/slide-03-pipeline-comparison.png" alt="Pipeline comparison: conventional path versus mgraph zero-copy path from network buffer to GPU compute" style="width: 100%; height: 100%; object-fit: contain; display: block;">
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>mgraph + msearch</span>
+      <span class="rule-line"></span>
+      <span>03</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 04 — Three Parts to Measure ———————————————————————————————————————— -->
+  <section data-label="Three Parts to Measure" class="slide-std">
+    <div class="slide-head" style="margin-bottom: 20px;">
+      <span class="eyebrow-lg">Benchmarks plan</span>
+      <h2 class="title-xl silver-strong">Measured in three parts.</h2>
+      <p class="lede-deck" style="max-width: 56ch;">
+        Each leg benches the architectural claim it rests on.
+      </p>
+    </div>
+
+    <div style="width: 65%; height: 320px; margin: 0 auto; overflow: hidden; border-radius: 4px;">
+      <img src="assets/slide-04-three-legs.png" alt="Three legs of the benchmark plan: data layer, GPU layer, and parallel surface — overlapping spans across one shared substrate" style="width: 100%; height: 100%; object-fit: cover; object-position: center bottom; display: block;">
+    </div>
+
+    <div class="three-up" style="margin-top: 0;">
+      <div class="item" style="padding-top: 24px;">
+        <span class="idx">I · DATA LEG</span>
+        <h3 class="label">Zero serialisation from network to compute.</h3>
+        <p class="desc">Structured payloads moved without translation at the boundary.</p>
+      </div>
+      <div class="item" style="padding-top: 24px;">
+        <span class="idx">II · GPU LAYER</span>
+        <h3 class="label">The first database built for Apple Silicon&rsquo;s GPU.</h3>
+        <p class="desc">On-device vector retrieval on hardware every developer already owns.</p>
+      </div>
+      <div class="item" style="padding-top: 24px;">
+        <span class="idx">III · PARALLEL SURFACE</span>
+        <h3 class="label">Coordinated CPU+GPU execution on shared memory.</h3>
+        <p class="desc">A property unique to Apple&rsquo;s unified memory architecture.</p>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Benchmarks plan</span>
+      <span class="rule-line"></span>
+      <span>04</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 04 — Part I: The Data Leg (section head) ———————————————————————— -->
+  <section data-label="Part I — Data Leg" class="section-head ink">
+    <div>
+      <div class="num">PART I · 01</div>
+      <h2 class="title silver-strong">The data leg.</h2>
+      <p class="sub">Structure-aware, zero-copy delta propagation at message-broker throughput — with database-grade atomic guarantees across complex types.</p>
+    </div>
+
+    <svg class="reg-bracket" viewBox="0 0 56 56">
+      <path d="M 1 28 L 1 1 L 28 1" fill="none" stroke="currentColor" stroke-width="1"/>
+      <path d="M 1 1 L 10 10" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+    </svg>
+
+    <div class="slide-footer">
+      <span>Part I · The Data Leg</span>
+      <span class="rule-line"></span>
+      <span>05</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 05 — Data leg: claim ———————————————————————————————————————————— -->
+  <section data-label="Data Leg — Claim" class="slide-claim">
+    <span class="eyebrow-lg">Part I · Claim</span>
+    <h2 class="title-xl silver-strong">Broker throughput.<br />Structured data.<br />Atomic Ops.</h2>
+    <p class="claim">
+      <em>Delta propagation at Redis speeds, with database-like atomic commits on complex data types.</em> No production system combines all of these today.
+    </p>
+
+    <div class="slide-footer">
+      <span>Part I · The Data leg</span>
+      <span class="rule-line"></span>
+      <span>06</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 06 — Data leg: what we bench ———————————————————————————————————— -->
+  <!-- ================================================================= -->
+  <!-- ================================================================= -->
+  <!-- 06 — Data leg: positioning (text + chart placeholder) ——————————— -->
+  <section data-label="Data Leg — Positioning" class="slide-std">
+    <div style="display: grid; grid-template-columns: 1fr 1.1fr; gap: 96px; align-items: center; flex: 1;">
+      <div>
+        <span class="eyebrow-lg" style="display: block; margin-bottom: 28px;">Part I · Positioning</span>
+        <h2 class="title-xl silver-strong" style="font-size: 64px; margin-bottom: 36px; max-width: 14ch;">Fast or structured. Today you pick one.</h2>
+        <p style="font-size: 30px; line-height: 1.4; color: var(--fg); max-width: 34ch; margin: 0 0 24px;">
+          Throughput versus semantic atomicity across today&rsquo;s systems.
+        </p>
+        <p style="font-size: 24px; line-height: 1.5; color: var(--fg-muted); max-width: 38ch; margin: 0;">
+          Brokers give up structure for speed. Databases pay for structure in latency. The upper-right corner is empty &mdash; that&rsquo;s what we bench against.
+        </p>
+      </div>
+      <div style="width: 100%; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 4px;">
+        <img src="assets/slide-06-positioning-chart.png" alt="Positioning chart: throughput versus semantic atomicity across today's systems — brokers (Kafka, Redis, MQTT) bottom-right, databases (Postgres, DuckDB, MySQL) upper-left, graph/search (Neo4j, Elasticsearch) middle, mgraph alone in the upper-right" style="width: 100%; height: 100%; object-fit: contain; display: block;">
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Part I · The Data Leg</span>
+      <span class="rule-line"></span>
+      <span>06</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 07 — Data Leg: what we bench ———————————————————————————————————— -->
+  <section data-label="Data Leg — Bench" class="slide-std">
+    <div class="slide-head">
+      <span class="eyebrow-lg">Part I · What we bench</span>
+      <h2 class="title-xl silver-strong">Throughput against brokers. Atomics against databases.</h2>
+    </div>
+
+    <table class="capability">
+      <thead>
+        <tr>
+          <th style="width: 28%;">Bench</th>
+          <th style="width: 26%;">Against</th>
+          <th>Measured</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label">Throughput</td>
+          <td class="against">Redis · Kafka</td>
+          <td class="measure">Ops per second. Latency percentiles. Payload scaling.</td>
+        </tr>
+        <tr>
+          <td class="label">Atomics</td>
+          <td class="against">Postgres · DuckDB</td>
+          <td class="measure">Table insert, vector update, stream append — single commit. Baselines must serialise structured payloads into JSON or BLOB columns; mgraph operates on them natively.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="slide-footer">
+      <span>Part I · The Data Leg</span>
+      <span class="rule-line"></span>
+      <span>07</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 08 — Part II: GPU Layer (section head) ————————————————————————— -->
+  <section data-label="Part II — GPU Layer" class="section-head ink">
+    <div>
+      <div class="num">PART II · 02</div>
+      <h2 class="title silver-strong">The GPU layer.</h2>
+      <p class="sub">The first vector database to leverage Apple Silicon&rsquo;s GPU for retrieval — on-device, zero-dependency, on hardware every developer already owns.</p>
+    </div>
+
+    <svg class="reg-bracket" viewBox="0 0 56 56">
+      <path d="M 1 28 L 1 1 L 28 1" fill="none" stroke="currentColor" stroke-width="1"/>
+      <path d="M 1 1 L 10 10" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+    </svg>
+
+    <div class="slide-footer">
+      <span>Part II · The GPU Layer</span>
+      <span class="rule-line"></span>
+      <span>09</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 09 — GPU layer: claim ————————————————————————————————————————— -->
+  <section data-label="GPU Layer — Claim" class="slide-claim">
+    <span class="eyebrow-lg">Part II · Claim</span>
+    <h2 class="title-xl silver-strong">On-device vector retrieval on the Apple Silicon GPU.</h2>
+    <p class="claim">
+      <em>Every Mac, iPad, and iPhone ships with a capable GPU.</em> Today&rsquo;s vector databases either leave it idle or route to a cloud service. msearch puts the full GPU in the developer&rsquo;s hands.
+    </p>
+
+    <div class="slide-footer">
+      <span>Part II · The GPU Layer</span>
+      <span class="rule-line"></span>
+      <span>10</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 10 — GPU layer: what we bench ———————————————————————————————— -->
+  <section data-label="GPU Layer — Bench" class="slide-std">
+    <div class="slide-head">
+      <span class="eyebrow-lg">Part II · What we bench</span>
+      <h2 class="title-xl silver-strong">Latency, throughput, and energy per query.</h2>
+    </div>
+
+    <table class="capability">
+      <thead>
+        <tr>
+          <th style="width: 28%;">Bench</th>
+          <th style="width: 30%;">Against</th>
+          <th>Measured</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label">Single-query latency</td>
+          <td class="against">pgvector · Chroma · Qdrant</td>
+          <td class="measure">P50 / P99 latency. Recall at target accuracy. Cold-start behaviour. Identical Apple Silicon hardware.</td>
+        </tr>
+        <tr>
+          <td class="label">Throughput at scale</td>
+          <td class="against">pgvector · Chroma · Qdrant</td>
+          <td class="measure">QPS. Latency under load. Index-build throughput. Index sizes approaching unified memory capacity.</td>
+        </tr>
+        <tr>
+          <td class="label">Energy per query</td>
+          <td class="against">Milvus on NVIDIA</td>
+          <td class="measure">Joules per query at matched recall and latency. NVIDIA cloud-provisioned.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="slide-footer">
+      <span>Part II · The GPU Layer</span>
+      <span class="rule-line"></span>
+      <span>11</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 11 — Part III: Parallel Surface (section head) ————————————————— -->
+  <section data-label="Part III — Parallel Surface" class="section-head ink">
+    <div>
+      <div class="num">PART III · 03</div>
+      <h2 class="title silver-strong">The parallel query surface.</h2>
+      <p class="sub">CPU and GPU, coordinated on shared memory. A class of database operations available only on Apple Silicon.</p>
+    </div>
+
+    <svg class="reg-bracket" viewBox="0 0 56 56">
+      <path d="M 1 28 L 1 1 L 28 1" fill="none" stroke="currentColor" stroke-width="1"/>
+      <path d="M 1 1 L 10 10" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+    </svg>
+
+    <div class="slide-footer">
+      <span>Part III · The Parallel Query Surface</span>
+      <span class="rule-line"></span>
+      <span>12</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 12 — Parallel: claim ————————————————————————————————————————————— -->
+  <section data-label="Parallel — Claim" class="slide-claim">
+    <span class="eyebrow-lg">Part III · Claim</span>
+    <h2 class="title-xl silver-strong">Each processor on the regime it&rsquo;s best at. Shared memory between them.</h2>
+    <p class="claim">
+      <em>GPUs are massively parallel. CPUs are optimally sequential.</em> By coordinating their operations in shared memory, we deliver performance that no system outside Apple Silicon can match.
+    </p>
+
+    <div class="slide-footer">
+      <span>Part III · The Parallel Query Surface</span>
+      <span class="rule-line"></span>
+      <span>13</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 13 — Parallel: GPU-over-CPU benches ————————————————————————————— -->
+  <section data-label="Parallel — GPU-over-CPU" class="slide-std">
+    <div class="slide-head">
+      <span class="eyebrow-lg">Part III · GPU-over-CPU on database primitives</span>
+      <h2 class="title-xl silver-strong">GPU against the CPU baseline.</h2>
+      <p class="lede-deck" style="max-width: 56ch;">Against Postgres and DuckDB across latency and throughput, at varying data sizes.</p>
+    </div>
+
+    <ul class="bench-list" style="margin-top: 16px;">
+      <li>
+        <span class="b-name">3-way / n-way joins</span>
+        <span class="b-desc">Algebraic predicates - AND, OR, NOT.</span>
+      </li>
+      <li>
+        <span class="b-name">Graph traversal</span>
+        <span class="b-desc">Multi-hop walks across structured graphs.</span>
+      </li>
+      <li>
+        <span class="b-name">Group-by, aggregation</span>
+        <span class="b-desc">Parallel reductions over columns.</span>
+      </li>
+      <li>
+        <span class="b-name">Sort, top-k</span>
+        <span class="b-desc">Reported as a crossover measurement — where GPU overtakes CPU by data size.</span>
+      </li>
+    </ul>
+
+    <div class="slide-footer">
+      <span>Part III · The Parallel Query Surface</span>
+      <span class="rule-line"></span>
+      <span>14</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 14 — Parallel: coordinated CPU+GPU ——————————————————————————————— -->
+  <section data-label="Parallel — Coordinated" class="slide-std ink">
+    <div class="slide-head">
+      <span class="eyebrow-lg">Part III · Coordinated CPU + GPU</span>
+      <h2 class="title-xl silver-strong">Each processor on its lane.<br />Shared state in UMA.</h2>
+      <p class="lede-deck" style="max-width: 60ch;">Five workloads where the handoff cost disappears because there is no handoff.</p>
+    </div>
+
+    <ul class="bench-list" style="margin-top: 8px;">
+      <li>
+        <span class="b-name">Hash join</span>
+        <span class="b-desc">GPU builds the hash table; CPU probes through collision chains. <span class="vs">vs. Postgres · DuckDB</span></span>
+      </li>
+      <li>
+        <span class="b-name">Two-phase top-k</span>
+        <span class="b-desc">GPU generates candidates; CPU runs filter. <span class="vs">vs. pure-CPU · pure-GPU</span></span>
+      </li>
+      <li>
+        <span class="b-name">Nested loop + vector scan</span>
+        <span class="b-desc">CPU iterates outer table; GPU scans inner. <span class="vs">vs. Postgres with pgvector</span></span>
+      </li>
+      <li>
+        <span class="b-name">HNSW reindex + traversal</span>
+        <span class="b-desc">GPU reindexes, CPU traverses — disjoint regions, shared memory. <span class="vs">vs. pure-CPU · pure-GPU</span></span>
+      </li>
+      <li>
+        <span class="b-name">Streaming aggregation</span>
+        <span class="b-desc">CPU manages window boundaries; GPU aggregates window. <span class="vs">vs. pure-CPU</span></span>
+      </li>
+    </ul>
+
+    <div class="slide-footer">
+      <span>Part III · The Parallel Query Surface</span>
+      <span class="rule-line"></span>
+      <span>15</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 15 — Timeline ——————————————————————————————————————————————————— -->
+  <section data-label="Timeline" class="slide-std">
+    <div class="slide-head">
+      <span class="eyebrow-lg">Schedule</span>
+      <h2 class="title-xl silver-strong">Four weeks.</h2>
+      <p class="lede-deck">One week per leg. One week to write.</p>
+    </div>
+
+    <div class="timeline">
+      <div class="row">
+        <div class="cell wk">Week 1</div>
+        <div class="cell leg">The Data Leg</div>
+        <div class="cell body">Throughput against Redis and Kafka. Atomics against Postgres and DuckDB on the three-part commit workload.</div>
+      </div>
+      <div class="row">
+        <div class="cell wk">Week 2</div>
+        <div class="cell leg">The GPU Layer</div>
+        <div class="cell body">Single-query latency and throughput at scale against pgvector, Chroma, and Qdrant. Energy per query against Milvus on NVIDIA.</div>
+      </div>
+      <div class="row">
+        <div class="cell wk">Week 3</div>
+        <div class="cell leg">The Parallel Surface</div>
+        <div class="cell body">Five bench groups: hash join, two-phase top-k, nested loop with vector scan, HNSW reindex with concurrent traversal, streaming aggregation with windows.</div>
+      </div>
+      <div class="row">
+        <div class="cell wk">Week 4</div>
+        <div class="cell leg">The Paper</div>
+        <div class="cell body">Intro, methods, results, discussion. Figures from weeks 1–3 folded in. Submission-ready draft.</div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Schedule</span>
+      <span class="rule-line"></span>
+      <span>16</span>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- 16 — End ———————————————————————————————————————————————————————— -->
+  <section data-label="End" class="end">
+    <div style="margin-top: 80px;">
+      <span class="eyebrow-lg" style="display: block; margin-bottom: 48px;">End of plan</span>
+      <h2 class="title-display silver-strong">Benchmarks published.
+      <!-- <p class="subtitle" style="margin-top: 56px; max-width: 44ch; color: var(--fg-muted);">
+        Results and figures land in public as each leg completes.
+      </p> -->
+    </div>
+
+    <div class="slide-footer">
+      <span>mgraph + msearch · datakey</span>
+      <span class="rule-line"></span>
+      <span>17</span>
+    </div>
+  </section>
+
+</deck-stage>
+
+<script src="./deck-stage.js"></script>
+
+<script>
+/* ——— GA4 slide tracking ————————————————————————————————————————————
+   Hooks into <deck-stage>'s `slidechange` CustomEvent. Emits one
+   `slide_view` event per navigation, a `deck_complete` the first time
+   the final slide is reached, and a `deck_exit` summary when the user
+   leaves. Relies on gtag() declared in <head>. */
+(() => {
+  if (typeof gtag !== 'function') return;
+
+  let slideEnteredAt = performance.now();
+  const sessionStart = slideEnteredAt;
+  let maxIndexReached = 0;
+  let totalNavigations = 0;
+  let completeFired = false;
+  let exitFired = false;
+
+  const labelOf = (slide) => {
+    if (!slide) return '';
+    return slide.getAttribute('data-label')
+        || slide.getAttribute('data-screen-label')
+        || '';
+  };
+
+  document.addEventListener('slidechange', (e) => {
+    const d = e.detail;
+    const now = performance.now();
+    const dwellMs = d.reason === 'init' ? 0 : Math.round(now - slideEnteredAt);
+
+    gtag('event', 'slide_view', {
+      slide_index: d.index,
+      slide_number: d.index + 1,
+      slide_label: labelOf(d.slide),
+      slide_total: d.total,
+      nav_reason: d.reason,           // init | keyboard | click | tap | api
+      previous_index: d.previousIndex,
+      dwell_ms: dwellMs,              // time on the slide we just left
+    });
+
+    slideEnteredAt = now;
+    totalNavigations += 1;
+    if (d.index > maxIndexReached) maxIndexReached = d.index;
+
+    if (d.index === d.total - 1 && !completeFired) {
+      completeFired = true;
+      gtag('event', 'deck_complete', {
+        slides_total: d.total,
+        navigations: totalNavigations,
+        time_to_complete_ms: Math.round(now - sessionStart),
+      });
+    }
+  });
+
+  // Summary on exit — pagehide is the most reliable hook across
+  // tab close, navigation away, and bfcache on mobile Safari.
+  const sendExit = () => {
+    if (exitFired) return;
+    exitFired = true;
+    const now = performance.now();
+    gtag('event', 'deck_exit', {
+      max_slide_index: maxIndexReached,
+      max_slide_number: maxIndexReached + 1,
+      total_navigations: totalNavigations,
+      total_time_ms: Math.round(now - sessionStart),
+      final_dwell_ms: Math.round(now - slideEnteredAt),
+    });
+  };
+  window.addEventListener('pagehide', sendExit);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') sendExit();
+  });
+})();
+</script>
+</body>
+</html>

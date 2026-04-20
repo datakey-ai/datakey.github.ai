@@ -1,0 +1,12 @@
+/*
+ * Datakey Design System — Font Loading
+ *
+ * Typeface direction: all-Geist. A single family carries display, body, and
+ * code roles — unifying the system around Vercel's Geist superfamily. Geist
+ * (sans) for every text size; Geist Mono for code, metadata, eyebrows.
+ *
+ * Hierarchy is carried by SIZE and WEIGHT, not family shift — aligned with
+ * the technical, engineered voice from the positioning brief.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500&display=swap');
